@@ -9,10 +9,14 @@
 
   let shows = $state<Show[]>([]);
   let selectedShow = $state<Show | null>(null);
-  let seatSelection = $state<string[]>([]); // Array of Seat IDs
+  let seatSelection = $state<string[]>([]); 
   let showScanner = $state(false);
 
   const fetchShows = () => {
+    // 1. Show loading when starting
+    // @ts-ignore
+    my.showLoading({ content: 'Loading shows...' });
+
     // Fetch all shows for today
     // Use local time for "today" to match the user's perception and store generated data
     const d = new Date();
@@ -21,9 +25,24 @@
     const day = String(d.getDate()).padStart(2, "0");
     const today = `${year}-${month}-${day}`;
     console.log("Fetching shows for:", today);
+    
     getShows(today).then((data) => {
       console.log("Fetched shows:", data);
       shows = data;
+      
+      // 2. Hide loading when data is ready
+      // @ts-ignore
+      my.hideLoading();
+    }).catch((err) => {
+      console.error(err);
+      // @ts-ignore
+      my.hideLoading();
+      // @ts-ignore
+      my.alert({
+        title: "Error",
+        content: "Failed to fetch shows. Please try again later.",
+        buttonText: "OK",
+      });
     });
   };
 
@@ -246,38 +265,43 @@
   <div class="flex justify-between items-center mb-8">
     <h1 class="text-4xl font-bold">Now Showing</h1>
 
-    <button
-      onclick={() => (showScanner = true)}
-      class="flex items-center gap-2 bg-[#ff6b6b] text-white px-4 py-2 rounded-lg font-bold hover:bg-[#ff6b6b]/90 transition-colors"
-    >
-      <svg
-        class="w-5 h-5"
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <rect width="5" height="5" x="3" y="3" rx="1" />
-        <rect width="5" height="5" x="16" y="3" rx="1" />
-        <rect width="5" height="5" x="3" y="16" rx="1" />
-        <path d="M21 16h-3a2 2 0 0 0-2 2v3" />
-        <path d="M21 21v.01" />
-        <path d="M12 7v3a2 2 0 0 1-2 2H7" />
-        <path d="M3 12h.01" />
-        <path d="M12 3h.01" />
-        <path d="M12 16v.01" />
-        <path d="M16 12h1" />
-        <path d="M21 12v.01" />
-        <path d="M12 21v-1" />
-      </svg>
-      Scan Ticket
-    </button>
+    <div class="flex gap-3">
+
+        <!-- Scan Button -->
+        <button
+          onclick={() => (showScanner = true)}
+          class="flex items-center gap-2 bg-[#ff6b6b] text-white px-4 py-2 rounded-lg font-bold hover:bg-[#ff6b6b]/90 transition-colors"
+        >
+          <svg
+            class="w-5 h-5"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect width="5" height="5" x="3" y="3" rx="1" />
+            <rect width="5" height="5" x="16" y="3" rx="1" />
+            <rect width="5" height="5" x="3" y="16" rx="1" />
+            <path d="M21 16h-3a2 2 0 0 0-2 2v3" />
+            <path d="M21 21v.01" />
+            <path d="M12 7v3a2 2 0 0 1-2 2H7" />
+            <path d="M3 12h.01" />
+            <path d="M12 3h.01" />
+            <path d="M12 16v.01" />
+            <path d="M16 12h1" />
+            <path d="M21 12v.01" />
+            <path d="M12 21v-1" />
+          </svg>
+          Scan Ticket
+        </button>
+    </div>
   </div>
+
 
   {#if showScanner}
     <QRScanner onScan={handleScan} onClose={() => (showScanner = false)} />
